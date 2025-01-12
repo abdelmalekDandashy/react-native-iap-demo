@@ -1,4 +1,11 @@
 {
   "name": "MyReactNativeApp",
-  "displayName": "MyReactNativeApp"
+  "displayName": "MyReactNativeApp",
+  "expo": {
+    "plugins": ["react-native-iap"]
+  },
+  "ios": {
+    "bundleIdentifier": "cc.fovea.subsdemo"
+  }
 }
+

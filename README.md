@@ -1,79 +1,177 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# React Native In-App Purchases Demo
 
-# Getting Started
+<div align="center">
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+[![iaptic](https://img.shields.io/badge/powered%20by-iaptic-blue)](https://www.iaptic.com)
+[![Platform](https://img.shields.io/badge/platform-iOS%20%7C%20Android-lightgrey)]()
+[![React Native](https://img.shields.io/badge/React%20Native-v0.76-blue)]()
+[![License](https://img.shields.io/badge/license-MIT-green)]()
 
-## Step 1: Start the Metro Server
+</div>
 
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
+A production-ready demonstration of implementing in-app purchases in React Native using [iaptic](https://www.iaptic.com) for receipt validation.
 
-To start Metro, run the following command from the _root_ of your React Native project:
+## Overview
+
+This demo implements a complete in-app purchase flow with server-side receipt validation:
+
+✨ **Secure**: Server-side validation with iaptic  
+🔄 **Reliable**: Full purchase restoration support  
+🎮 **Interactive**: Token-based consumable system  
+📱 **Production-Ready**: Error handling and state management
+
+## Requirements
+
+- Node.js 16 or newer
+- npm or yarn package manager
+- React Native development environment
+- [iaptic](https://www.iaptic.com) account credentials
+- iOS Developer Account with IAP enabled
+- Android Developer Account with IAP enabled (for Android)
+
+## Quick Setup
 
 ```bash
-# using npm
-npm start
+# Install dependencies
+npm install
+# OR using yarn
+yarn install
 
-# OR using Yarn
-yarn start
+# Configure iaptic credentials
+cp src/Config-example.ts src/Config.ts
 ```
 
-## Step 2: Start your Application
+### iOS Setup
 
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
-
-### For Android
-
+1. Configure your products in App Store Connect
+2. Run the app:
 ```bash
-# using npm
-npm run android
-
-# OR using Yarn
-yarn android
-```
-
-### For iOS
-
-```bash
-# using npm
 npm run ios
-
-# OR using Yarn
+# OR using yarn
 yarn ios
 ```
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+### Android Setup
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+1. Configure your products in Google Play Console
+2. Make sure you have:
+   - A Google Play Developer account
+   - An app created in Google Play Console
+   - In-app products configured
+   - A test account added to the app's testers
 
-## Step 3: Modifying your App
+3. Update your Android configuration:
+   - Verify your `android/app/build.gradle` has the billing permission:
+     ```gradle
+     android {
+         ...
+         defaultConfig {
+             ...
+             manifestPlaceholders = [
+                 ...
+                 BILLING_KEY: "your_license_key_from_play_console"
+             ]
+         }
+     }
+     ```
 
-Now that you have successfully run the app, let's modify it.
+4. Run the app:
+```bash
+# Method 1: Using Gradle directly (recommended)
+cd android
+./gradlew clean
+./gradlew installPlayDebug
+cd ..
 
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
+# Method 2: Using React Native CLI
+cd android
+./gradlew clean
+cd ..
+yarn android --appVariant=playDebug
+# OR using npm
+npm run android -- --appVariant=playDebug
+```
 
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
+Note: The project uses multiple build variants. Always specify `playDebug` variant to ensure proper Google Play Store integration.
 
-## Congratulations! :tada:
+### Common Android Issues
+1. **Build Variant Errors**: 
+   - If you see "Task 'app:installDebug' not found" or similar
+   - Use `installPlayDebug` instead of `installDebug`
+   - Or specify `--appVariant=playDebug` with React Native CLI
 
-You've successfully run and modified your React Native App. :partying_face:
+2. **Package Manager Issues**:
+   - If `yarn` command is not found, install it first:
+     ```bash
+     npm install -g yarn
+     ```
+   - Or use npm commands as alternatives
 
-### Now what?
+3. **Runtime Errors**:
+   - Verify billing permission in manifest (already added)
+   - Check Play Store is installed and up to date
+   - Ensure test account is properly set up
+   - Verify product IDs match exactly
 
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
+4. **Testing**:
+   - Use a real device (not emulator)
+   - Sign in with a test account
+   - Make sure the app is signed with the correct key
+   - Verify you're using the correct product IDs
 
-# Troubleshooting
+For detailed setup and troubleshooting, visit [iaptic.com](https://www.iaptic.com).
 
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+## Architecture
 
-# Learn More
+The demo is built with:
 
-To learn more about React Native, take a look at the following resources:
+- [react-native-iap](https://github.com/hyochan/react-native-iap) - Store interactions
+- [iaptic](https://www.iaptic.com) - Receipt validation
+- TypeScript - Type-safe implementation
 
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+### Key Components
+
+```
+src/
+├── IapService.ts     # Purchase and validation logic
+├── Config.ts         # iaptic configuration
+└── TokenManager.ts   # Consumable handling example
+```
+
+## Documentation
+
+- [iaptic Integration Guide](https://www.iaptic.com/documentation)
+- [React Native IAP Docs](https://react-native-iap.hyo.dev/)
+
+## Support
+
+### iOS Setup
+- Configure products in App Store Connect
+- Use sandbox account for testing
+
+### Android Setup
+- Configure products in Google Play Console
+- Use a test account from your testers list
+- Verify your app signing key matches Play Console
+- Make sure billing permission is properly set
+- Test with a real device (emulators may have issues)
+
+### Common Android Issues
+1. **Build Errors**: 
+   - Clean the project: `cd android && ./gradlew clean`
+   - Verify React Native version compatibility
+   - Check Android SDK version in `build.gradle`
+
+2. **Runtime Errors**:
+   - Verify billing permission in manifest
+   - Check Play Store is installed and up to date
+   - Ensure test account is properly set up
+   - Verify product IDs match exactly
+
+3. **Testing**:
+   - Use a real device (not emulator)
+   - Sign in with a test account
+   - Make sure the app is signed with the correct key
+   - Verify you're using the correct product IDs
+
+For detailed setup and troubleshooting, visit [iaptic.com](https://www.iaptic.com).
