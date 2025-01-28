@@ -1,20 +1,15 @@
-import { IapticConfig } from "./iaptic-rn";
-import { ProductDefinition } from "./IapProducts";
+import { IapticConfig, IapticProductDefinition } from "./iaptic-rn";
 
 export class Config {
 
-  static appIdentifiers = {
-    ios: "com.example.demo",
-    android: "com.example.demo"
-  };
-
-  static products: ProductDefinition[] = [
-    { id: 'one_token', type: 'consumable', numTokens: 1 },
-    { id: 'ten_tokens', type: 'consumable', numTokens: 10 },
+  static products: IapticProductDefinition[] = [
+    { id: 'one_token',  type: 'consumable', tokenAmount: 1,  tokenType: 'token' },
+    { id: 'ten_tokens', type: 'consumable', tokenAmount: 10, tokenType: 'token' },
   ];
 
   static iaptic: IapticConfig = {
     appName: 'yourappname',
-    publicKey: 'your-public-key'
+    publicKey: 'your-public-key',
+    iosBundleId: 'com.example.demo'
   };
 }

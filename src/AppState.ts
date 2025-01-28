@@ -1,15 +1,18 @@
-import * as IAP from 'react-native-iap';
+import { IapticProduct, IapticVerifiedPurchase } from './iaptic-rn';
 
 /**
  * The state of the app
  */
 export interface AppState {
 
-  /** List of products available for purchase */
-  availableProducts: IAP.Product[];
+  /** Pseudo-identifier of the user logged in the app, for demo purposes */
+  applicationUsername: string;
 
-  /** The number of tokens the user has */
-  tokens: number;
+  /** List of products available for purchase */
+  availableProducts: IapticProduct[];
+
+  /** The active subscription */
+  activeSubscription?: IapticVerifiedPurchase;
 
   /** Progress of restoring purchases */
   restorePurchasesInProgress?: {
@@ -28,10 +31,11 @@ export interface AppState {
  * The initial state of the app
  */
 export const initialAppState: AppState = {
+  applicationUsername: 'iaptic-rn-demo-user',
   availableProducts: [],
-  tokens: 0,
   purchaseInProgress: undefined,
   restorePurchasesInProgress: undefined,
+  activeSubscription: undefined,
 }
 
 /**
@@ -66,8 +70,12 @@ export class AppStateManager {
   /**
    * Set the purchase status
    */
-  setPurchaseStatus(status: 'purchasing' | 'processing' |  'validating' | 'finishing', productId: string) {
-    this.set({ purchaseInProgress: { productId, status } });
+  setPurchaseStatus(status: 'purchasing' | 'processing' |  'validating' | 'finishing' | 'completed', productId: string) {
+    if (status === 'completed') {
+      this.clearPurchaseStatus();
+    } else {
+      this.set({ purchaseInProgress: { productId, status } });
+    }
   }
 
   /**
@@ -77,19 +85,11 @@ export class AppStateManager {
     this.set({ purchaseInProgress: undefined });
   }
 
-  setTokens(tokens: number) {
-    this.set({ tokens });
-  }
-
-  setRestorePurchasesTotal(total: number) {
-    this.set({ restorePurchasesInProgress: { numDone: 0, total } });
-  }
-
-  setRestorePurchasesProgress(numDone: number) {
-    if (numDone >= (this._state?.restorePurchasesInProgress?.total ?? 0)) {
+  setRestorePurchasesProgress(numDone: number, total: number) {
+    if (numDone >= total) {
       this.set({ restorePurchasesInProgress: undefined });
     } else {
-      this.set({ restorePurchasesInProgress: { numDone, total: this._state.restorePurchasesInProgress?.total ?? 0 } });
+      this.set({ restorePurchasesInProgress: { numDone, total } });
     }
   }
 

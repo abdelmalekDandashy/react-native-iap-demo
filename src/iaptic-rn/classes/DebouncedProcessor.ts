@@ -42,9 +42,10 @@ export class DebouncedProcessor<T> {
    * @param data The data to process
    */
   add(data: T) {
-    if (!this.needUpdate.some(existing => this.idFunction(existing) === this.idFunction(data)))
+    if (!this.needUpdate.some(existing => this.idFunction(existing) === this.idFunction(data))) {
       this.needUpdate.push(data);
-    this.scheduleProcessing();
+      this.scheduleProcessing();
+    }
   }
 
   private scheduleProcessing() {
@@ -56,10 +57,10 @@ export class DebouncedProcessor<T> {
   }
 
   private process() {
-    const array = this.needUpdate;
+    const list = this.needUpdate;
     this.needUpdate = [];
-    for (let i = 0; i < array.length; i++) {
-      this.processFunction(array[i]);
+    for (let i = 0; i < list.length; i++) {
+      this.processFunction(list[i]);
     }
   }
 }
