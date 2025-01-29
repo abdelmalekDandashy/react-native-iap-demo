@@ -1,6 +1,7 @@
 import { purchasesAreEqual } from "../functions/purchasesAreEqual";
 import { IapticVerifiedPurchase } from "../types";
 import { IapticEvents } from "./IapticEvents";
+import { logger } from "./IapticLogger";
 
 /** Manages the collection of verified purchases */
 export class Purchases {
@@ -51,10 +52,12 @@ export class Purchases {
    * @param purchase - The verified purchase to add
    */
   addPurchase(purchase: IapticVerifiedPurchase) {
+    logger.debug('adding verified purchase: ' + JSON.stringify(purchase));
     const key = purchaseKey(purchase);
     const existing = this.purchases[key];
     if (existing && purchasesAreEqual(existing, purchase)) {
       // No change
+      logger.debug('purchase exists and did not change');
       return;
     }
     this.purchases[key] = purchase;

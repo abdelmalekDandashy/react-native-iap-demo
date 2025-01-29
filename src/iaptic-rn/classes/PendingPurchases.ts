@@ -1,7 +1,6 @@
 import { IapticOffer, IapticPendingPurchaseState, IapticPendingPurchase } from "../types";
 import { IapticEvents } from "./IapticEvents";
 
-
 /**
  * Keep track of the state of pending purchases.
  */
@@ -14,31 +13,42 @@ export class PendingPurchases {
     return this.pendingPurchases;
   }
 
-  public has(productId: string): boolean {
-    return this.pendingPurchases.find(p => p.productId === productId) !== undefined;
+  public getStatus(productId: string, offerId?: string): IapticPendingPurchaseState | undefined {
+    if (!offerId) {
+      return this.pendingPurchases.find(p => p.productId === productId)?.status;
+    }
+    else {
+      return this.pendingPurchases.find(p => p.productId === productId && p.offerId === offerId)?.status;
+    }
   }
 
   public add(offer: IapticOffer) {
-    if (this.pendingPurchases.find(p => p.productId === offer.productId)) {
-      return;
+    const existing = this.pendingPurchases.find(p => p.productId === offer.productId);
+    if (existing) {
+      return this.update(offer.productId, 'purchasing', offer.id);
     }
-    this.pendingPurchases.push({productId: offer.productId, status: 'purchasing'});
+    this.pendingPurchases.push({productId: offer.productId, status: 'purchasing', offerId: offer.id});
+    this.events.emit('pendingPurchase.updated', {productId: offer.productId, offerId: offer.id, status: 'purchasing'});
   }
 
-  public remove(productId: string) {
-    this.pendingPurchases = this.pendingPurchases.filter(p => p.productId !== productId);
+  public remove(productId: string, offerId?: string) {
+    if (this.getStatus(productId, offerId) !== undefined) {
+      this.pendingPurchases = this.pendingPurchases.filter(p => p.productId !== productId);
+      this.events.emit('pendingPurchase.updated', {productId, offerId, status: 'completed'});
+    }
   }
 
-  public update(productId: string, status: IapticPendingPurchaseState) {
+  public update(productId: string, status: IapticPendingPurchaseState, offerId?: string) {
     const purchase = this.pendingPurchases.find(p => p.productId === productId);
-    if (purchase) {
+    if (purchase && purchase.status !== status) {
+      purchase.status = status;
+      if (offerId) purchase.offerId = offerId;
       if (status === 'completed') {
-        this.remove(productId);
+        this.remove(productId, offerId);
       }
       else {
-        purchase.status = status;
+        this.events.emit('pendingPurchase.updated', purchase);
       }
-      this.events.emit('pendingPurchase.updated', purchase);
     }
   }
 }

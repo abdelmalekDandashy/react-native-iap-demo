@@ -8,8 +8,8 @@ interface TokenTransaction {
     /** Unique identifier from the store */
     transactionId: string;
   
-    /** Type of token (e.g., 'gems', 'coins', 'credits') */
-    tokenType: string;
+    /** Type of token (e.g., 'gem', 'coin', 'credit') */
+    type: string;
 
     /** Number of tokens earned (positive) or spent (negative) for this transaction */
     amount: number;
@@ -27,6 +27,16 @@ interface TokenTransaction {
  * When a transaction is removed, it is removed from the list.
  * 
  * The balance is the sum of all the amounts in the list.
+ * 
+ * @see IapticProductDefinition.tokenType
+ * @see IapticProductDefinition.tokenValue
+ * 
+ * @example
+ * ```typescript
+ * const tokensManager = new TokensManager(iaptic);
+ * // ... tokensManager is now tracking consumable purchases that have a tokenType defined.
+ * const balance = tokensManager.getBalance('coin');
+ * ```
  */
 export class TokensManager {
   
@@ -46,16 +56,16 @@ export class TokensManager {
       this.loadTransactions(); // Load stored transactions when instantiated
       iaptic.addEventListener('consumable.purchased', (purchase: IapticVerifiedPurchase) => {
         const product = iaptic.products.getDefinition(purchase.id);
-        if (product && product.tokenAmount && product.tokenType) {
-          this.addTransaction(this.typeSafeTransactionId(purchase), product.tokenType, product.tokenAmount);
+        if (product && product.tokenValue && product.tokenType) {
+          this.addTransaction(this.typeSafeTransactionId(purchase), product.tokenType, product.tokenValue);
         }
         if (consumePurchases) {
           iaptic.consume(purchase);
         }
-      });
+      }, 'TokensManager');
       iaptic.addEventListener('consumable.refunded', (purchase: IapticVerifiedPurchase) => {
         this.removeTransaction(this.typeSafeTransactionId(purchase));
-      });
+      }, 'TokensManager');
     }
 
     private typeSafeTransactionId(purchase: IapticVerifiedPurchase): string {
@@ -98,13 +108,13 @@ export class TokensManager {
      * Add a transaction to the map and persist it
      * 
      * @param transactionId - Unique identifier for the transaction
-     * @param tokenType - Type of token (e.g., 'gems', 'coins', 'credits')
+     * @param type - Type of token (e.g., 'gems', 'coins', 'credits')
      * @param amount - Number of tokens earned (positive) or spent (negative)
      */
-    addTransaction(transactionId: string, tokenType: string, amount: number) {
+    addTransaction(transactionId: string, type: string, amount: number) {
       this.transactions.set(transactionId, {
         transactionId,
-        tokenType,
+        type,
         amount,
         timestamp: Date.now()
       });
@@ -125,7 +135,7 @@ export class TokensManager {
     getBalance(tokenType: string): number {
       let total = 0;
       this.transactions.forEach(transaction => {
-        if (transaction.tokenType === tokenType) {
+        if (transaction.type === tokenType) {
           total += transaction.amount;
         }
       });
@@ -139,8 +149,8 @@ export class TokensManager {
       const balances = new Map<string, number>();
       
       this.transactions.forEach(transaction => {
-        const currentBalance = balances.get(transaction.tokenType) || 0;
-        balances.set(transaction.tokenType, currentBalance + transaction.amount);
+        const currentBalance = balances.get(transaction.type) || 0;
+        balances.set(transaction.type, currentBalance + transaction.amount);
       });
 
       return balances;
@@ -160,7 +170,7 @@ export class TokensManager {
     getTransactions(tokenType?: string): TokenTransaction[] {
       const transactions = Array.from(this.transactions.values());
       return tokenType 
-        ? transactions.filter(t => t.tokenType === tokenType)
+        ? transactions.filter(t => t.type === tokenType)
         : transactions;
     }
   } 

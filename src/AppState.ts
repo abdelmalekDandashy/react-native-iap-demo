@@ -1,4 +1,4 @@
-import { IapticProduct, IapticVerifiedPurchase } from './iaptic-rn';
+import { IapticPendingPurchase, IapticProduct, IapticVerifiedPurchase } from './iaptic-rn';
 
 /**
  * The state of the app
@@ -21,10 +21,7 @@ export interface AppState {
   };
 
   /** Information about the purchase in progress */
-  purchaseInProgress?: {
-    productId: string;
-    status: 'purchasing' | 'processing' |  'validating' | 'finishing';
-  };
+  pendingPurchase?: IapticPendingPurchase;
 }
 
 /**
@@ -33,7 +30,7 @@ export interface AppState {
 export const initialAppState: AppState = {
   applicationUsername: 'iaptic-rn-demo-user',
   availableProducts: [],
-  purchaseInProgress: undefined,
+  pendingPurchase: undefined,
   restorePurchasesInProgress: undefined,
   activeSubscription: undefined,
 }
@@ -52,6 +49,7 @@ export class AppStateManager {
   private setAppState: (appState: AppState) => void;
 
   constructor([appState, setAppState]: [AppState, (appState: AppState) => void]) {
+    console.log('AppStateManager constructor');
     this._state = {...appState};
     this.appState = appState;
     this.setAppState = setAppState;
@@ -70,19 +68,12 @@ export class AppStateManager {
   /**
    * Set the purchase status
    */
-  setPurchaseStatus(status: 'purchasing' | 'processing' |  'validating' | 'finishing' | 'completed', productId: string) {
-    if (status === 'completed') {
-      this.clearPurchaseStatus();
+  updatePendingPurchase(pendingPurchase: IapticPendingPurchase) {
+    if (pendingPurchase.status === 'completed') {
+      this.set({ pendingPurchase: undefined });
     } else {
-      this.set({ purchaseInProgress: { productId, status } });
+      this.set({ pendingPurchase: { ...pendingPurchase } });
     }
-  }
-
-  /**
-   * Clear the purchase status
-   */
-  clearPurchaseStatus() {
-    this.set({ purchaseInProgress: undefined });
   }
 
   setRestorePurchasesProgress(numDone: number, total: number) {
@@ -96,7 +87,7 @@ export class AppStateManager {
   /**
    * Get the app state
    */
-  get() { 
+  getState() { 
     return this.appState;
   }
 }

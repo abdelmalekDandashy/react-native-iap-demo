@@ -33,10 +33,22 @@ export interface IapticProductDefinition {
    */
   entitlements?: string[];
 
-  /** Amount of tokens this product will give to the user for consumable products */
-  tokenAmount?: number;
-  /** Type of token this product will give to the user for consumable products */
+  /**
+   * Type of token this product will give to the user for consumable products.
+   * 
+   * For example: "coin", "gem", "silver", etc.
+   */
   tokenType?: string;
+
+  /**
+   * Amount of tokens this product will give to the user for consumable products.
+   * 
+   * @example
+   * ```typescript
+   * { id: 'coins_100', type: 'consumable', tokenType: 'coin', tokenValue: 100 },
+   * ```
+   */
+  tokenValue?: number;
 }
 
 
@@ -510,14 +522,21 @@ export interface IapticValidateRequestTransactionGoogle {
  * Pricing offer for an In-App Product
  */
 export interface IapticOffer {
+  /** Offer identifier */
   id: string;
+  /** Platform of the product */
+  platform: IapticPurchasePlatform;
+  /** Pricing phases for this offer */
   pricingPhases: IapticPricingPhase[];
+  /** Product identifier */
   productId: string;
+  /** Type of product (subscription, consumable, etc.) */
   productType?: IapticProductType;
-  className?: "Offer";
-  platform?: string;
-  offerType?: "Default" | "Introductory" | "Subscription";
+  /** Type of offer */
+  offerType: "Default" | "Introductory" | "Subscription";
+  /** Subscription group (if any) */
   productGroup?: string | null;
+  /** Offer token (if any) */
   offerToken?: string;
 }
 
@@ -579,6 +598,9 @@ export interface IapticPendingPurchase {
 
   /** Status of the purchase */
   status: IapticPendingPurchaseState;
+
+  /** Identifier of the offer that is being purchased */
+  offerId?: string;
 }
 
 export enum IapticLoggerVerbosityLevel {

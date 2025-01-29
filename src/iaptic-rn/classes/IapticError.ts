@@ -74,7 +74,7 @@ export function toIapticError(err: IAP.PurchaseError | Error, severity: IapticEr
     severity,
     code: defaultCode,
     localizedTitle: Locales.get('UnknownError_title'),
-    localizedMessage: Locales.get(`UnknownError`),
+    localizedMessage: Locales.get(`UnknownError`) + " " + err.message,
     debugMessage: extraDebugMessage,
     status: 0,
   });

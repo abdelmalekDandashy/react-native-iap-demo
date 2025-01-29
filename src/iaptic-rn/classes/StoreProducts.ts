@@ -1,6 +1,7 @@
 import * as IAP from 'react-native-iap';
-import { IapticProductDefinition, IapticProduct, IapticOffer, IapticPricingPhase, IapticProductType, IapticRecurrenceMode, IapticPaymentMode } from '../types';
+import { IapticProductDefinition, IapticProduct, IapticOffer, IapticPricingPhase, IapticProductType, IapticRecurrenceMode, IapticPaymentMode, IapticPurchasePlatform } from '../types';
 import { getPlatform } from '../functions/getPlatform';
+import { logger } from './IapticLogger';
 
 /** Manages the catalog of available in-app purchase products */
 export class StoreProducts {
@@ -80,7 +81,7 @@ export class StoreProducts {
         this.products.push(product);
       }
     }
-    return this.list();
+    return this.all();
   }
 
   /**
@@ -89,13 +90,29 @@ export class StoreProducts {
    * @param definitions - The product definitions to load
    * @returns The loaded products
    */
-  async load(definitions: IapticProductDefinition[]): Promise<IapticProduct[]> {
-    const subscriptions = await IAP.getSubscriptions({
-      skus: definitions.filter(d => d.type === 'paid subscription').map(d => d.id)
-    });
-    const products = await IAP.getProducts({
-      skus: definitions.filter(d => d.type !== 'paid subscription').map(d => d.id)
-    });
+  async load(definitions?: IapticProductDefinition[]): Promise<IapticProduct[]> {
+    if (!definitions) {
+      definitions = this.definitions;
+    }
+    logger.info(`load: ${definitions.map(d => d.id).join(', ')}`);
+    let subscriptions: IAP.Subscription[] = [];
+    let products: IAP.Product[] = [];
+    const subscriptionIds = definitions.filter(d => d.type === 'paid subscription').map(d => d.id);
+    if (subscriptionIds.length > 0) {
+      logger.debug(`subscriptions to load: ${subscriptionIds.join(', ')}`);
+      subscriptions = await IAP.getSubscriptions({
+        skus: subscriptionIds
+      });
+      logger.debug(`subscriptions loaded: ${JSON.stringify(subscriptions)}`);
+    }
+    const productIds = definitions.filter(d => d.type !== 'paid subscription').map(d => d.id);
+    if (productIds.length > 0) {
+      logger.debug(`products to load: ${productIds.join(', ')}`);
+      products = await IAP.getProducts({
+        skus: productIds
+      });
+      logger.debug(`products loaded: ${JSON.stringify(products)}`);
+    }
     this.add(definitions, subscriptions, products);
     return this.definitions.map(d => this.toIapticProduct(d)).filter(p => p !== undefined);
   }
@@ -115,6 +132,17 @@ export class StoreProducts {
   }
 
   /**
+   * On Google Play, the title is formatted as "product name (app name)"
+   * This function removes the app name from the title
+   */
+  private cleanupTitle(title: string): string {
+    if (getPlatform() === IapticPurchasePlatform.GOOGLE_PLAY) {
+      return title.replace(/ \(.*\)$/, '');
+    }
+    return title;
+  }
+
+  /**
    * Convert native product fields to iaptic unified product format
    * 
    * @param d - Product definition
@@ -129,7 +157,7 @@ export class StoreProducts {
           type: d.type,
           id: d.id,
           offers: this.subscriptionOffers(sub),
-          title: sub.title,
+          title: this.cleanupTitle(sub.title),
           platform: getPlatform(),
         }
       default:
@@ -139,16 +167,16 @@ export class StoreProducts {
           type: d.type,
           id: d.id,
           offers: this.productOffers(product),
-          title: product.title,
+          title: this.cleanupTitle(product.title),
           platform: getPlatform(),
         }
     }
   }
 
   /**
-   * Return the list of products in iaptic unified format
+   * Return the list of all products in iaptic unified format
    */
-  list(): IapticProduct[] {
+  all(): IapticProduct[] {
     return this.definitions
       .map((d: IapticProductDefinition): IapticProduct | undefined => this.toIapticProduct(d))
       .filter(p => p !== undefined);
@@ -173,6 +201,7 @@ export class StoreProducts {
     // Create a single offer for the product
     const offer: IapticOffer = {
       id: product.productId,
+      platform: getPlatform(),
       productId: product.productId,
       pricingPhases: [pricingPhase],
       offerType: 'Default'
@@ -214,11 +243,13 @@ export class StoreProducts {
 
         offers.push({
           id: makeOfferIdAndroid(product.productId, offerDetails),
+          platform: IapticPurchasePlatform.GOOGLE_PLAY,
           productId: product.productId,
           pricingPhases: offerDetails.pricingPhases.pricingPhaseList.map(phase =>
             formatPricingPhaseAndroid(phase)
           ),
           offerType: 'Subscription',
+          offerToken: offerDetails.offerToken,
         });
       });
     }
@@ -241,6 +272,7 @@ export class StoreProducts {
         }
         offers.push({
           id: 'introductory',
+          platform: getPlatform(),
           productId: product.productId,
           pricingPhases: [introPhase, finalPhase],
           offerType: 'Introductory',
@@ -258,6 +290,7 @@ export class StoreProducts {
         }
         offers.push({
           id: discount.identifier,
+          platform: getPlatform(),
           productId: product.productId,
           pricingPhases: [discountPhase, finalPhase],
           offerType: 'Subscription',
@@ -265,6 +298,7 @@ export class StoreProducts {
       });
       offers.push({
         id: '$',
+        platform: getPlatform(),
         productId: product.productId,
         pricingPhases: [finalPhase],
         offerType: 'Default',

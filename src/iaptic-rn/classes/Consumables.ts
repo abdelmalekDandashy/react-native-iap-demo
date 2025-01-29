@@ -17,7 +17,7 @@ export class Consumables {
    * @param catalog - The product catalog
    */
   constructor(private readonly purchases: Purchases, private readonly products: StoreProducts, private readonly events: IapticEvents) {
-    this.events.addEventListener('purchase.updated', (purchase: IapticVerifiedPurchase) => this.purchaseUpdated(purchase));
+    this.events.addEventListener('purchase.updated', (purchase: IapticVerifiedPurchase) => this.purchaseUpdated(purchase), 'Consumables');
   }
 
   /**

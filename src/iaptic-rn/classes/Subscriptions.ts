@@ -16,7 +16,7 @@ export class Subscriptions {
    * @param products - The product catalog
    */
   constructor(private readonly purchases: Purchases, private readonly products: StoreProducts, private readonly events: IapticEvents) {
-    this.events.addEventListener('purchase.updated', purchase => this.purchaseUpdated(purchase));
+    this.events.addEventListener('purchase.updated', purchase => this.purchaseUpdated(purchase), 'Subscriptions');
   }
 
   /**
