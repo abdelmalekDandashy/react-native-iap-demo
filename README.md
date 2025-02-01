@@ -83,6 +83,8 @@ cd android
 ./gradlew installPlayDebug
 cd ..
 
+cd android && ./gradlew clean && ./gradlew installPlayDebug && cd ..
+
 # Method 2: Using React Native CLI
 cd android
 ./gradlew clean

@@ -1,4 +1,4 @@
-package com.myreactnativeapp
+package cc.fovea.purchase.demo
 
 import android.app.Application
 import com.facebook.react.PackageList

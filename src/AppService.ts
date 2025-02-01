@@ -1,20 +1,17 @@
 import { Platform, Alert, ToastAndroid } from 'react-native';
-import { IapticError, IapticErrorSeverity, IapticLoggerVerbosityLevel, IapticOffer, IapticRN } from './iaptic-rn';
+import { IapticError, IapticSeverity, IapticOffer, IapticRN } from 'react-native-iaptic';
 import { AppStateManager } from './AppState';
 import { Config } from './Config';
 
 export class AppService {
 
-  log(message: string, severity: IapticErrorSeverity = IapticErrorSeverity.INFO) {
+  log(message: string, severity: IapticSeverity = IapticSeverity.INFO) {
     const SYMBOLS = ['💡', '🔔', '❌'];
     console.log(`${new Date().toISOString()} ${SYMBOLS[severity]} ${message}`);
   }
 
   /** Stateful app state returned by useState */
   private appState: AppStateManager;
-
-  /** The iaptic library */
-  private iaptic: IapticRN = new IapticRN(Config.iaptic);
 
   constructor(appState: AppStateManager) {
     this.appState = appState;
@@ -27,32 +24,29 @@ export class AppService {
    */
   onAppStartup() {
     this.log('onAppStartup');    
-    this.initIaptic();
+    this.initializeIaptic();
     return () => {
-      this.iaptic.removeAllEventListeners();
+      IapticRN.destroy();
     }
   }
 
-  async initIaptic() {
+  async initializeIaptic() {
     try {
-      this.iaptic.setVerbosity(IapticLoggerVerbosityLevel.DEBUG);
-      this.iaptic.setApplicationUsername(this.appState.getState().applicationUsername);
-      this.iaptic.setProductDefinitions(Config.products);
-
-      this.iaptic.addEventListener('pendingPurchase.updated', purchase => {
-        this.log('🔄 Pending purchase updated: ' + JSON.stringify(purchase));
-        this.appState.updatePendingPurchase(purchase);
-      });
-  
-      this.iaptic.addEventListener('subscription.updated', (reason, purchase) => {
+      IapticRN.addEventListener('subscription.updated', (reason, purchase) => {
         this.log('🔄 Subscription updated: ' + reason + ' for ' + JSON.stringify(purchase));
-        this.appState.set({ activeSubscription: this.iaptic.subscriptions.active() });
+        this.appState.set({ entitlements: IapticRN.listEntitlements() });
+      });
+      IapticRN.addEventListener('products.updated', (availableProducts) => {
+        this.log('🔄 Products updated: ' + JSON.stringify(availableProducts));
+        this.appState.set({ availableProducts });
       });
 
-      await this.iaptic.initialize();
+      await IapticRN.initialize(Config.iaptic);
+      IapticRN.setApplicationUsername(this.appState.getState().applicationUsername);
+  
       this.appState.set({
-        availableProducts: this.iaptic.products.all(),
-        activeSubscription: this.iaptic.subscriptions.active()
+        availableProducts: IapticRN.getProducts(),
+        entitlements: IapticRN.listEntitlements(),
       });
     }
     catch (err: any) {
@@ -67,8 +61,8 @@ export class AppService {
 
     if (error instanceof IapticError) {
       this.log(`IapticRN #${error.code}: ${error.message}`, error.severity);
-      if (error.severity === IapticErrorSeverity.INFO) return;
-      if (error.severity === IapticErrorSeverity.WARNING && Platform.OS === 'android') {
+      if (error.severity === IapticSeverity.INFO) return;
+      if (error.severity === IapticSeverity.WARNING && Platform.OS === 'android') {
         ToastAndroid.show(error.localizedMessage, ToastAndroid.SHORT);
       }
       else {
@@ -76,7 +70,7 @@ export class AppService {
       }
     }
     else {
-      this.log(error.message, IapticErrorSeverity.ERROR);
+      this.log(error.message, IapticSeverity.ERROR);
       Alert.alert('Error', error.message);
     }
   }
@@ -86,7 +80,7 @@ export class AppService {
    */
   async handleSubscribeButton(offer: IapticOffer) {
     try {
-      await this.iaptic.order(offer);
+      await IapticRN.order(offer);
     }
     catch (err: any) {
       this.showError(err);
@@ -105,7 +99,7 @@ export class AppService {
    */
   public async restorePurchases() {
     try {
-      const numRestored = await this.iaptic.restorePurchases((processed, total) => {
+      const numRestored = await IapticRN.restorePurchases((processed, total) => {
         this.appState.setRestorePurchasesProgress(processed, total);
       });
       Alert.alert(`${numRestored} purchases restored.`);
@@ -114,15 +108,18 @@ export class AppService {
     }
   }
 
-  public listEntitlements() {
-    return this.iaptic.listEntitlements();
-  }
-
-  public manageSubscriptions() {
-    this.iaptic.manageSubscriptions();
-  }
-
-  public manageBilling() {
-    this.iaptic.manageBilling();
+  /**
+   * Check if a feature is unlocked
+   * 
+   * @param featureId - The feature ID to check
+   */
+  public checkFeatureAccess(featureId: string) {
+    if (IapticRN.checkEntitlement(featureId)) {
+      Alert.alert(`"${featureId}" feature is unlocked.`);
+    }
+    else {
+      Alert.alert(`Please subscribe to the app to unlock feature "${featureId}".`);
+    }
   }
 }
+

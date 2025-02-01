@@ -1,4 +1,4 @@
-package com.myreactnativeapp
+package cc.fovea.purchase.demo
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
