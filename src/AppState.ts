@@ -1,5 +1,3 @@
-import { IapticProduct } from 'react-native-iaptic';
-
 /**
  * The state of the app
  */
@@ -8,17 +6,8 @@ export interface AppState {
   /** Pseudo-identifier of the user logged in the app, for demo purposes */
   applicationUsername: string;
 
-  /** List of products available for purchase */
-  availableProducts: IapticProduct[];
-
   /** Entitlements of the user */
   entitlements: string[];
-
-  /** Progress of restoring purchases */
-  restorePurchasesInProgress?: {
-    numDone: number;
-    total: number;
-  };
 }
 
 /**
@@ -26,8 +15,6 @@ export interface AppState {
  */
 export const initialAppState: AppState = {
   applicationUsername: 'iaptic-rn-demo-user',
-  availableProducts: [],
-  restorePurchasesInProgress: undefined,
   entitlements: [],
 }
 
@@ -59,14 +46,6 @@ export class AppStateManager {
   set(value: Partial<AppState>) {
     this._state = { ...this._state, ...value };
     this.setAppState(this._state);
-  }
-
-  setRestorePurchasesProgress(numDone: number, total: number) {
-    if (numDone >= total) {
-      this.set({ restorePurchasesInProgress: undefined });
-    } else {
-      this.set({ restorePurchasesInProgress: { numDone, total } });
-    }
   }
 
   /**

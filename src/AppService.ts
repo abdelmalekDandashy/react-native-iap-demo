@@ -36,21 +36,18 @@ export class AppService {
         this.log('🔄 Subscription updated: ' + reason + ' for ' + JSON.stringify(purchase));
         this.appState.set({ entitlements: IapticRN.listEntitlements() });
       });
-      IapticRN.addEventListener('products.updated', (availableProducts) => {
-        this.log('🔄 Products updated: ' + JSON.stringify(availableProducts));
-        this.appState.set({ availableProducts });
-      });
 
       await IapticRN.initialize(Config.iaptic);
       IapticRN.setApplicationUsername(this.appState.getState().applicationUsername);
   
       this.appState.set({
-        availableProducts: IapticRN.getProducts(),
         entitlements: IapticRN.listEntitlements(),
       });
     }
     catch (err: any) {
-      this.showError(err);
+      if (err instanceof IapticError) {
+        Alert.alert(err.localizedTitle, err.localizedMessage);
+      }
     }
   }
 
@@ -58,54 +55,12 @@ export class AppService {
    * Show an error to the user
    */
   showError(error: Error | IapticError) {
-
-    if (error instanceof IapticError) {
-      this.log(`IapticRN #${error.code}: ${error.message}`, error.severity);
-      if (error.severity === IapticSeverity.INFO) return;
-      if (error.severity === IapticSeverity.WARNING && Platform.OS === 'android') {
-        ToastAndroid.show(error.localizedMessage, ToastAndroid.SHORT);
-      }
-      else {
-        Alert.alert(error.localizedTitle, error.localizedMessage);
-      }
-    }
-    else {
-      this.log(error.message, IapticSeverity.ERROR);
-      Alert.alert('Error', error.message);
-    }
   }
 
-  /**
-   * Called when the user presses the subscribe button for a given subscription product
-   */
-  async handleSubscribeButton(offer: IapticOffer) {
-    try {
-      await IapticRN.order(offer);
-    }
-    catch (err: any) {
-      this.showError(err);
-    }
-  }
-
-  /**
-   * - Process the historical record of valid purchases
-   * - Useful for restoring purchases when:
-   *   - User reinstalls the app
-   *   - User switches devices
-   *   - App starts fresh (no local storage)
-   *   - Purchase succeeded but app crashed before purchaseUpdatedListener could process it
-   *   - Any interruption during purchase flow (network issues, app crash, device shutdown)
-   * - Acts as a safety net to ensure no purchases are lost
-   */
-  public async restorePurchases() {
-    try {
-      const numRestored = await IapticRN.restorePurchases((processed, total) => {
-        this.appState.setRestorePurchasesProgress(processed, total);
-      });
-      Alert.alert(`${numRestored} purchases restored.`);
-    } catch (error: any) {
-      this.showError(error);
-    }
+  handlePurchaseComplete() {
+    Alert.alert('Thank you for your purchase');
+    console.log(IapticRN.listEntitlements());
+    console.log(IapticRN.getActiveSubscription());
   }
 
   /**

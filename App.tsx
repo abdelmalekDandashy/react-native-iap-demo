@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { StyleSheet, SafeAreaView, TouchableOpacity, Text, ScrollView } from 'react-native';
-import { IapticRN, IapticSubscriptionView, IapticTestComponent } from 'react-native-iaptic';
+import { IapticRN, IapticSubscriptionView } from 'react-native-iaptic';
 import { AppStateManager, initialAppState } from './src/AppState';
 import { AppService } from './src/AppService';
 
@@ -10,12 +10,12 @@ let iapServiceInstance: AppService | null = null;
 
 function App(): React.JSX.Element {
   const [appState, setAppState] = useState(initialAppState);
-  
+
   // Initialize singleton instances once
   const appStateManager = useRef<AppStateManager>(
     appStateManagerInstance || (appStateManagerInstance = new AppStateManager([appState, setAppState]))
   ).current;
-  
+
   const iapService = useRef<AppService>(
     iapServiceInstance || (iapServiceInstance = new AppService(appStateManager))
   ).current;
@@ -23,18 +23,11 @@ function App(): React.JSX.Element {
   // One-time initialization with proper cleanup
   useEffect(() => iapService.onAppStartup(), []);
 
-  const restorePurchasesInProgress = appState.restorePurchasesInProgress;
-
-  // const subscriptionViewRef = useRef<IapticSubscriptionViewHandle>(null);
-  // useEffect(() => {
-  //   IapticRN.setSubscriptionViewRef(subscriptionViewRef);
-  // }, []);
-
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.productsContainer}>
         <Text style={styles.subscriptionText}>Subscription</Text>
-        
+
         {/* <IapticActiveSubscription /> */}
 
         {/* A feature that will only be available if the user has any subscription */}
@@ -53,51 +46,38 @@ function App(): React.JSX.Element {
           <Text style={styles.buttonText}>Premium Access: {appState.entitlements.includes('premium') ? 'Granted' : 'Locked'}</Text>
         </TouchableOpacity>
 
-        {/* <IapticProductList onOrder={(offer) => iapService.handleSubscribeButton(offer)} /> */}
-        
-        <Text style={styles.restoreText}>
-          Previously purchased items? Restore them here:
-        </Text>
         <TouchableOpacity
           style={[
-            styles.button, 
-            styles.restoreButton,
-            restorePurchasesInProgress && styles.buttonDisabled
+            styles.button,
+            styles.subscriptionButton,
           ]}
-          disabled={!!restorePurchasesInProgress}
-          onPress={() => {
-            iapService.restorePurchases();
-          }}
-        >
-          <Text style={styles.buttonText}>
-            {restorePurchasesInProgress 
-              ? restorePurchasesInProgress.numDone <= 0 || restorePurchasesInProgress.total < 0
-                ? '...'
-                : `${restorePurchasesInProgress.numDone}/${restorePurchasesInProgress.total}`
-              : 'Restore Purchases'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.button, 
-            styles.restoreButton,
-            restorePurchasesInProgress && styles.buttonDisabled
-          ]}
-          disabled={!!restorePurchasesInProgress}
           onPress={() => {
             IapticRN.presentSubscriptionView();
           }}
         >
-          <Text style={styles.buttonText}>Subscription View</Text>
+          <Text style={styles.buttonText}>{!appState.entitlements.includes('basic') ? 'Subscribe To Unlock' : 'Manage Subscription'}</Text>
         </TouchableOpacity>
 
       </ScrollView>
-      <IapticSubscriptionView entitlementLabels={{
-        basic: { label: "Basic Access", detail: "Access to More Basic Features" },
-        premium: { label: "Premium Access", detail: "Access to All Premium Features" },
-        pro: { label: "Pro Access", detail: "Access to All Pro Features" }
-      }} />
+      <IapticSubscriptionView
+        entitlementLabels={{
+          basic: {
+            label: "Basic Access",
+            detail: "Access to More Basic Features"
+          },
+          premium: {
+            label: "Premium Access",
+            detail: "Access to All Premium Features"
+          },
+          pro: {
+            label: "Pro Access",
+            detail: "Access to All Pro Features"
+          }
+        }} onPurchaseComplete={() => {
+          iapService.handlePurchaseComplete();
+        }}
+        termsUrl='https://www.iaptic.com/legal/terms-and-conditions'
+      />
     </SafeAreaView>
   );
 }
@@ -133,7 +113,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: '#666',
   },
-  restoreButton: {
+  subscriptionButton: {
+    marginTop: 20,
     backgroundColor: '#5856D6',
   },
   subscriptionText: {
