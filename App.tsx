@@ -77,6 +77,10 @@ function App(): React.JSX.Element {
           iapService.handlePurchaseComplete();
         }}
         termsUrl='https://www.iaptic.com/legal/terms-and-conditions'
+        theme={{
+          primaryColor: '#FF7A00',
+          secondaryColor: '#FF0000',
+        }}
       />
     </SafeAreaView>
   );
