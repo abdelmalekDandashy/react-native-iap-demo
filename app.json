@@ -5,7 +5,7 @@
     "plugins": ["react-native-iap"]
   },
   "ios": {
-    "bundleIdentifier": "cc.fovea.subsdemo"
+    "bundleIdentifier": "com.synmedia.tapyn"
   }
 }
 
