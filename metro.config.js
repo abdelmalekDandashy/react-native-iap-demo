@@ -8,9 +8,9 @@ const path = require('path');
  * @type {import('metro-config').MetroConfig}
  */
 const config = {
-  watchFolders: [
-    path.resolve(__dirname, '../react-native-iaptic')
-  ],
+  // watchFolders: [
+  //   path.resolve(__dirname, '../react-native-iaptic')
+  // ],
   resolver: {
     extraNodeModules: {
       'react': path.resolve(__dirname, 'node_modules/react'),

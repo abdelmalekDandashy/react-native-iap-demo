@@ -12,7 +12,7 @@ export class Config {
       { id: 'tapyn5125',          type: 'consumable', tokenValue: 5125,   tokenType: 'coin' },
       { id: 'tapyn10500',         type: 'consumable', tokenValue: 10500,  tokenType: 'coin' },
       { id: 'tapyn55000',         type: 'consumable', tokenValue: 55000,  tokenType: 'coin' },
-      { id: 'most_popular_combo', type: 'consumable', tokenValue: /* combo value */, tokenType: 'coin' },
+      { id: 'most_popular_combo', type: 'consumable', tokenValue: 10000, tokenType: 'coin' },
       { id: 'welcome_offer',      type: 'consumable', tokenValue: 500,    tokenType: 'coin' },
 
       // Auto‑renewable subscriptions (tapyn_group)
