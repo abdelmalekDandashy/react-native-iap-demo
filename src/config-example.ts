@@ -3,8 +3,8 @@ import { IapticConfig } from "react-native-iaptic";
 export class Config {
 
   static iaptic: IapticConfig = {
-    appName: 'yourappname',
-    publicKey: 'your-public-key',
+    appName: 'com.synmedia.tapyn',
+    publicKey: '6606eedf-6f02-44a4-8ee3-be4eb391c3e7',
     iosBundleId: 'com.example.demo',
     products: [
       { id: 'one_token',  type: 'consumable', tokenValue: 1,  tokenType: 'token' },
