@@ -4,7 +4,7 @@ export class Config {
   static iaptic: IapticConfig = {
     appName: 'com.synmedia.tapyn',
     publicKey: 'your-public-6606eedf-6f02-44a4-8ee3-be4eb391c3e7',
-    iosBundleId: 'com.example.demo',
+    iosBundleId: 'com.synmedia.tapyn',
     products: [
       // Consumable token bundles
       { id: 'tapyn500',           type: 'consumable', tokenValue: 500,    tokenType: 'coin' },
