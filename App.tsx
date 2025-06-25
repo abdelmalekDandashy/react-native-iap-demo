@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, SafeAreaView, View, Text, TouchableOpacity, ScrollView, FlatList } from 'react-native';
+import { StyleSheet, SafeAreaView, View, Text, TouchableOpacity, ScrollView, FlatList, ActivityIndicator } from 'react-native';
 import { IapticRN, IapticProduct, IapticOffer } from 'react-native-iaptic';
 import { AppStateManager, initialAppState } from './src/AppState';
 import { AppService } from './src/AppService';
@@ -14,6 +14,7 @@ let iapServiceInstance: AppService | null = null;
 function SubscriptionScreen({ onClose }: { onClose: () => void }) {
   const [subscriptions, setSubscriptions] = useState<IapticProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [purchasingId, setPurchasingId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -40,6 +41,18 @@ function SubscriptionScreen({ onClose }: { onClose: () => void }) {
     })();
   }, []);
 
+  const handlePurchase = async (offer: IapticOffer, productId: string) => {
+    try {
+      setPurchasingId(productId);
+      await IapticRN.order(offer);
+      iapServiceInstance?.handlePurchaseComplete();
+    } catch (err) {
+      console.warn('Purchase error:', err);
+    } finally {
+      setPurchasingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -59,18 +72,36 @@ function SubscriptionScreen({ onClose }: { onClose: () => void }) {
         keyExtractor={item => item.id}
         contentContainerStyle={styles.list}
         renderItem={({ item }) => {
-          // Use the first available offer for each subscription
           const offer: IapticOffer = item.offers[0];
+          const entitlements = (item as any).entitlements || [];
+          const hasAccess = entitlements.some((e: string) =>
+            appStateManagerInstance?.getState().entitlements.includes(e),
+          );
+
           return (
             <View style={styles.card}>
+              <Text style={styles.title}>{item.id}</Text>
               <Text style={styles.title}>{item.title}</Text>
-              <Text style={styles.price}>{offer.localizedPrice || offer.pricingPhases[0].price}</Text>
+              <Text style={styles.price}>{offer.pricingPhases[0].price}</Text>
               <Text style={styles.detail}>{offer.pricingPhases[0].billingPeriod}</Text>
               <TouchableOpacity
                 style={styles.button}
-                onPress={() => IapticRN.order(offer)}
+                disabled={purchasingId === item.id}
+                onPress={() => handlePurchase(offer, item.id)}
               >
-                <Text style={styles.buttonText}>Buy</Text>
+                {purchasingId === item.id ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Buy</Text>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, { marginTop: 8, backgroundColor: hasAccess ? 'green' : 'red'}]}
+                onPress={() => iapServiceInstance?.checkFeatureAccess(entitlements[0] || item.id)}
+              >
+                <Text style={styles.buttonText}>
+                  Access: {hasAccess ? 'Granted' : 'Locked'}
+                </Text>
               </TouchableOpacity>
             </View>
           );
