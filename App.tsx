@@ -21,8 +21,16 @@ function SubscriptionScreen({ onClose }: { onClose: () => void }) {
         // Ensure products are loaded
         // await IapticRN.loadProducts();
         // Fetch all products, then filter for auto-renewable subscriptions
+     
+        // once you know the current user’s ID:
+        const myUserId = 'user_12345'; // e.g. from your auth context
+        await IapticRN.setApplicationUsername(myUserId);
+
+
         const all = IapticRN.getProducts();
-        const subs = all.filter(p => p.type === 'paid subscription');
+        const subs = all.filter(
+          p => p.type === 'paid subscription' || 'consumable',
+        );
         setSubscriptions(subs);
       } catch (err) {
         console.warn('Error loading subscription products:', err);
@@ -114,7 +122,7 @@ function App(): React.JSX.Element {
         <Text style={styles.subscriptionText}>Tapyn Subscription</Text>
 
         <TouchableOpacity
-          onPress={() => iapService.checkFeatureAccess('tapyn')}
+          onPress={() => iapService.checkFeatureAccess('weekly_plan')}
           style={styles.button}
         >
           <Text style={styles.buttonText}>
@@ -127,7 +135,7 @@ function App(): React.JSX.Element {
           onPress={() => setShowSubs(true)}
         >
           <Text style={styles.buttonText}>
-            {appState.entitlements.includes('tapyn') ? 'Manage Subscription' : 'Subscribe To Unlock'}
+            {appState.entitlements.includes('weekly_plan') ? 'Manage Subscription' : 'Subscribe To Unlock'}
           </Text>
         </TouchableOpacity>
       </ScrollView>

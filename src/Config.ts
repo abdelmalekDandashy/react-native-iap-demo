@@ -4,6 +4,7 @@ export class Config {
   static iaptic: IapticConfig = {
     appName: 'com.synmedia.tapyn',
     publicKey: '6606eedf-6f02-44a4-8ee3-be4eb391c3e7',
+    // applicationUsername: 'boudy9817381',
     iosBundleId: 'com.synmedia.tapyn',
     products: [
       // Consumable token bundles
@@ -16,7 +17,7 @@ export class Config {
       { id: 'welcome_offer',      type: 'consumable', tokenValue: 500,    tokenType: 'coin' },
 
       // Auto‑renewable subscriptions (tapyn_group)
-      { id: 'weekly_plan',                         type: 'paid subscription', entitlements: ['male'] },
+      { id: 'weekly_plan',                         type: 'paid subscription', entitlements: ['weekly_plan'] },
       { id: 'tapynSubscription',                   type: 'paid subscription', entitlements: ['tapyn'] },
       { id: 'infinity_yearly',                     type: 'paid subscription', entitlements: ['infinity'] },
       { id: 'infinity_monthly',                    type: 'paid subscription', entitlements: ['infinity'] },
