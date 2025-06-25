@@ -42,6 +42,8 @@ function SubscriptionScreen({ onClose }: { onClose: () => void }) {
   }, []);
 
   const handlePurchase = async (offer: IapticOffer, productId: string) => {
+    console.log('productId',productId)
+    console.log('offer',productId)
     try {
       setPurchasingId(productId);
       await IapticRN.order(offer);
@@ -75,7 +77,8 @@ function SubscriptionScreen({ onClose }: { onClose: () => void }) {
           const offer: IapticOffer = item.offers[0];
           const entitlements = (item as any).entitlements || [];
           const hasAccess = entitlements.some((e: string) =>
-            appStateManagerInstance?.getState().entitlements.includes(e),
+            {appStateManagerInstance?.getState().entitlements.includes(e),
+            console.log('e', e)}
           );
 
           return (
@@ -97,7 +100,7 @@ function SubscriptionScreen({ onClose }: { onClose: () => void }) {
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.button, { marginTop: 8, backgroundColor: hasAccess ? 'green' : 'red'}]}
-                onPress={() => iapServiceInstance?.checkFeatureAccess(entitlements[0] || item.id)}
+                onPress={() => iapServiceInstance?.checkFeatureAccess( item.id)}
               >
                 <Text style={styles.buttonText}>
                   Access: {hasAccess ? 'Granted' : 'Locked'}
