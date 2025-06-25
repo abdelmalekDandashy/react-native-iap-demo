@@ -85,8 +85,12 @@ export function SubscriptionScreen({ onClose }: { onClose: () => void }) {
                 )}
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.button, { marginTop: 8 }]}
-                onPress={() => singletons.iapServiceInstance?.checkFeatureAccess(entitlements[0] || item.id)}
+                style={[styles.button, { marginTop: 8, backgroundColor: hasAccess ? 'green' : 'red' }]}
+                onPress={() =>
+                { singletons.iapServiceInstance?.checkFeatureAccess(entitlements[0] || item.id);
+                  console.log('it,.id', entitlements[0] || item.id);
+                 }
+                }
               >
                 <Text style={styles.buttonText}>
                   Access: {hasAccess ? 'Granted' : 'Locked'}

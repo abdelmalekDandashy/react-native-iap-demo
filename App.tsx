@@ -54,11 +54,11 @@ function App(): React.JSX.Element {
         <Text style={styles.subscriptionText}>Tapyn Subscription</Text>
 
         <TouchableOpacity
-          onPress={() => iapService.checkFeatureAccess('weekly_plan')}
+          onPress={() => iapService.checkFeatureAccess('tapyn')}
           style={styles.button}
         >
           <Text style={styles.buttonText}>
-            Access: {appState.entitlements.includes('tapyn') ? 'Granted' : 'Locked'}
+            tapyn (weekly): {appState.entitlements.includes('tapyn') ? 'Granted' : 'Locked'}
           </Text>
         </TouchableOpacity>
 
