@@ -3,7 +3,6 @@ import { StyleSheet, SafeAreaView, TouchableOpacity, Text, ScrollView } from 're
 import { IapticRN, IapticSubscriptionView } from 'react-native-iaptic';
 import { AppStateManager, initialAppState } from './src/AppState';
 import { AppService } from './src/AppService';
-import { Config } from './src/Config';
 
 // Create stable references outside component
 let appStateManagerInstance: AppStateManager | null = null;
@@ -21,84 +20,63 @@ function App(): React.JSX.Element {
     iapServiceInstance || (iapServiceInstance = new AppService(appStateManager))
   ).current;
 
+  // One-time initialization with proper cleanup
+  useEffect(() => iapService.onAppStartup(), []);
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} contentContainerStyle={styles.productsContainer}>
-        <Text style={styles.subscriptionText}>Subscriptions</Text>
+        <Text style={styles.subscriptionText}>Subscription</Text>
 
-        {/* Buttons to check each subscription entitlement */}
+        {/* <IapticActiveSubscription /> */}
+
+        {/* A feature that will only be available if the user has any subscription */}
         <TouchableOpacity
-          onPress={() => iapService.checkFeatureAccess('male')}
+          onPress={() => iapService.checkFeatureAccess("basic")}
           style={styles.button}
         >
-          <Text style={styles.buttonText}>
-            Male Subscription: {appState.entitlements.includes('male') ? 'Active' : 'Inactive'}
-          </Text>
+          <Text style={styles.buttonText}>Basic Access: {appState.entitlements.includes('basic') ? 'Granted' : 'Locked'}</Text>
+        </TouchableOpacity>
+
+        {/* A feature that will only be available if the user has a premium subscription */}
+        <TouchableOpacity
+          onPress={() => iapService.checkFeatureAccess("premium")}
+          style={styles.button}
+        >
+          <Text style={styles.buttonText}>Premium Access: {appState.entitlements.includes('premium') ? 'Granted' : 'Locked'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          onPress={() => iapService.checkFeatureAccess('tapyn')}
-          style={styles.button}
+          style={[
+            styles.button,
+            styles.subscriptionButton,
+          ]}
+          onPress={() => {
+            IapticRN.presentSubscriptionView();
+          }}
         >
-          <Text style={styles.buttonText}>
-            Tapyn Subscription: {appState.entitlements.includes('tapyn') ? 'Active' : 'Inactive'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => iapService.checkFeatureAccess('infinity')}
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>
-            Infinity Subscription: {appState.entitlements.includes('infinity') ? 'Active' : 'Inactive'}
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => iapService.checkFeatureAccess('halloween')}
-          style={styles.button}
-        >
-          <Text style={styles.buttonText}>
-            Halloween Subscription: {appState.entitlements.includes('halloween') ? 'Active' : 'Inactive'}
-          </Text>
-        </TouchableOpacity>
-
-        {/* Button to open the subscription view */}
-        <TouchableOpacity
-          style={[styles.button, styles.subscriptionButton]}
-          onPress={() => IapticRN.presentSubscriptionView()}
-        >
-          <Text style={styles.buttonText}>
-            {!appState.entitlements.length ? 'Subscribe To Unlock' : 'Manage Subscriptions'}
-          </Text>
+          <Text style={styles.buttonText}>{!appState.entitlements.includes('basic') ? 'Subscribe To Unlock' : 'Manage Subscription'}</Text>
         </TouchableOpacity>
 
       </ScrollView>
-
       <IapticSubscriptionView
         entitlementLabels={{
-          male: {
-            label: 'Male Subscription',
-            detail: 'Unlock special male-only features',
+          basic: {
+            label: "Basic Access",
+            detail: "Access to More Basic Features"
           },
-          tapyn: {
-            label: 'Tapyn Subscription',
-            detail: 'Full access to Tapyn premium features',
+          premium: {
+            label: "Premium Access",
+            detail: "Access to All Premium Features"
           },
-          infinity: {
-            label: 'Infinity Subscription',
-            detail: 'Yearly/monthly unlimited access',
-          },
-          halloween: {
-            label: 'Halloween Special',
-            detail: 'Seasonal spooky perks',
-          },
-        }}
-        onPurchaseComplete={() => {
+          pro: {
+            label: "Pro Access",
+            detail: "Access to All Pro Features"
+          }
+        }} onPurchaseComplete={() => {
           iapService.handlePurchaseComplete();
         }}
-        termsUrl="https://www.iaptic.com/legal/terms-and-conditions"
+        termsUrl='https://www.iaptic.com/legal/terms-and-conditions'
         theme={{
           primaryColor: '#FF7A00',
           secondaryColor: '#FF0000',
@@ -126,13 +104,22 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
   },
-  subscriptionButton: {
-    marginTop: 20,
-    backgroundColor: '#5856D6',
+  buttonDisabled: {
+    opacity: 0.6,
   },
   buttonText: {
     color: 'white',
     fontSize: 16,
+  },
+  restoreText: {
+    textAlign: 'center',
+    marginTop: 20,
+    marginBottom: 10,
+    color: '#666',
+  },
+  subscriptionButton: {
+    marginTop: 20,
+    backgroundColor: '#5856D6',
   },
   subscriptionText: {
     fontSize: 18,
@@ -143,3 +130,4 @@ const styles = StyleSheet.create({
 });
 
 export default App;
+
