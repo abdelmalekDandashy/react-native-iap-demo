@@ -14,7 +14,7 @@ export interface AppState {
  * The initial state of the app
  */
 export const initialAppState: AppState = {
-  applicationUsername: 'iaptic-rn-demo-user',
+  applicationUsername: 'UseUserIdforTapynHere',
   entitlements: [],
 }
 
