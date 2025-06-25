@@ -3,7 +3,6 @@ import { StyleSheet, SafeAreaView, View, Text, TouchableOpacity, ScrollView, Fla
 import { IapticRN, IapticProduct, IapticOffer } from 'react-native-iaptic';
 import { AppStateManager, initialAppState } from './src/AppState';
 import { AppService } from './src/AppService';
-import { Config } from './src/Config';
 
 // Persist singletons
 let appStateManagerInstance: AppStateManager | null = null;
@@ -91,19 +90,18 @@ function App(): React.JSX.Element {
 
   // One-time setup: initialize Iaptic and fetch products
   useEffect(() => {
+    let cleanup: (() => void) | undefined;
     (async () => {
       try {
-        await IapticRN.destroy(); // ensure clean state
-      } catch {}
-      try {
-        await IapticRN.initialize(Config.iaptic);
+        cleanup = await iapService.onAppStartup();
         await IapticRN.loadProducts();
-        // Start service listeners and restore entitlements
-        await iapService.onAppStartup();
       } catch (err) {
         console.warn('Iaptic setup error:', err);
       }
     })();
+    return () => {
+      if (cleanup) cleanup();
+    };
   }, []);
 
   if (showSubs) {

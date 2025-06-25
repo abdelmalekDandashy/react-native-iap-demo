@@ -38,7 +38,7 @@ npm install
 yarn install
 
 # Configure iaptic credentials
-cp src/Config-example.ts src/Config.ts
+cp src/config-example.ts src/Config.ts
 ```
 
 ### iOS Setup
@@ -135,9 +135,9 @@ The demo is built with:
 
 ```
 src/
-├── IapService.ts     # Purchase and validation logic
+├── AppService.ts     # Purchase and validation logic
 ├── Config.ts         # iaptic configuration
-└── TokenManager.ts   # Consumable handling example
+└── AppState.ts       # Application state management
 ```
 
 ## Documentation

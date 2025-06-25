@@ -22,9 +22,9 @@ export class AppService {
    * 
    * @returns a destructor function that should be called when the app is closed
    */
-  onAppStartup() {
-    this.log('onAppStartup');    
-    this.initializeIaptic();
+  async onAppStartup() {
+    this.log('onAppStartup');
+    await this.initializeIaptic();
     return () => {
       IapticRN.destroy();
     }

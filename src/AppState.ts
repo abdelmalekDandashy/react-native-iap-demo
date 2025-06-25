@@ -45,13 +45,14 @@ export class AppStateManager {
    */
   set(value: Partial<AppState>) {
     this._state = { ...this._state, ...value };
+    this.appState = this._state;
     this.setAppState(this._state);
   }
 
   /**
    * Get the app state
    */
-  getState() { 
-    return this.appState;
+  getState() {
+    return this._state;
   }
 }
