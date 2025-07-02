@@ -79,12 +79,14 @@ android {
 
     namespace "cc.fovea.purchase.demo"
     defaultConfig {
-        applicationId "cc.fovea.purchase.demo.nc"
+        manifestPlaceholders = [
         BILLING_KEY: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuT72zrpUbcQGM4pBfhkIJgyIAYPi1tYZkLYGy1aj412x16Jp9lj3ySpb6AowrApz2/mJoHLiipgdY7kyogcaoccMl9iol8c4avqtzMiHvFYpj0d0rD446WLQdvxuUwxQgWjqRiz0UB87/HsFBuDWt73RKzvB6DqywJMYgi4/lfZcnisdNZxCtb8pgzsmyiVEyCDWh2xY5oNuiDv9Zs90wfPuf4xat3SW3aGHocZ7BYr3xUeASO5kT3evUI8ZiOfDsS9vCiSsU3keDZ1bTKxwDK4UHLT6385kMKmr5UyzxuXWC1UrEf9TNW5CdiFiYaLXw2L/MN26pB6c54rWDmw1KwIDAQAB"
+        ]
+        applicationId "cc.fovea.purchase.demo.nc"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10006
-        versionName "1.0"
+        versionCode 10007
+        versionName "1.1"
         
         missingDimensionStrategy 'store', 'play'
         
